@@ -1,3 +1,5 @@
+from collections import deque
+
 import numpy as np
 import cv2
 from cv2 import setTrackbarPos
@@ -27,9 +29,22 @@ setTrackbarPos("Blue", "Marker Color", 1)                                   #Set
 #Array which holds colors
 colors = [(255, 0, 0), (0, 255, 0),(0, 0, 255), (0, 255, 255)]
 
+colorIndex = 0
+
 #Below array "kernel" is used for morphology operations
 kernel = np.ones((5, 5), np.uint8)
 
+#Marks color points in the array
+red_index = 0
+green_index = 0
+blue_index = 0
+yellow_index = 0
+
+#Setting queues for storing pixel values of each colors
+rpoints = [deque(maxlen = 1024)]
+gpoints = [deque(maxlen = 1024)]
+bpoints = [deque(maxlen = 1024)]
+ypoints = [deque(maxlen = 1024)]
 
 cap = cv2.VideoCapture(0)                                          #Camera initialization
 
@@ -92,6 +107,14 @@ while(True):
     #FInding the contours
     cnts, _ = cv2.findContours(Mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     print(cnts)
+    center=0
+
+    if(len(cnts)>0):
+        #Sorting the contours from higest to lowest and choosing the highest one
+        cnt = sorted(cnts, key=cv2.contourArea, reverse=True)[0]
+        (x, y), radius=cv2.minEnclosingCircle(cnt)                  #Getting the center point and radius
+        print(radius)
+        cv2.circle(frame,(int(x),int(y)),int(radius),(0, 255, 255),2)               #Displays a circle around the center
 
     #Shows all the frames
     cv2.imshow("Tracking", frame)
