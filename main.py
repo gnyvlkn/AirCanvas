@@ -11,7 +11,7 @@ def setValuesRed(x):
     setTrackbarPos("Blue", "Marker Color", 0)
 def setValuesGreen(x):
     setTrackbarPos("Red", "Marker Color", 0)
-    setTrackbarPos("Blue", "Marker Color", 0)
+    setTrackbarPos("Blue", "Marker  Color", 0)
 def setValuesBlue(x):
     setTrackbarPos("Green", "Marker Color", 0)
     setTrackbarPos("Red", "Marker Color", 0)
@@ -88,9 +88,14 @@ while(True):
     #Below codes create buttons for color
     frame = cv2.rectangle(frame, (40, 1), (140, 65),(122, 122, 122), -1)
     frame = cv2.rectangle(frame, (160, 1), (255, 65),colors[0], -1)
+    frame = cv2.rectangle(frame, (390, 1), (485, 65), colors[2], -1)
     frame = cv2.rectangle(frame, (275, 1), (370, 65),colors[1], -1)
-    frame = cv2.rectangle(frame, (390, 1), (485, 65),colors[2], -1)
-    frame = cv2.rectangle(frame, (505, 1), (600, 65),colors[3], -1)
+    frame = cv2.rectangle(frame, (505, 1), (600, 65), colors[3], -1)
+
+
+
+
+
     cv2.putText(frame, "CLEAR ALL", (49, 33),cv2.FONT_HERSHEY_SIMPLEX, 0.5,(255, 255, 255), 2, cv2.LINE_AA)
     cv2.putText(frame, "BLUE", (185, 33),cv2.FONT_HERSHEY_SIMPLEX, 0.5,(255, 255, 255), 2, cv2.LINE_AA)
     cv2.putText(frame, "GREEN", (298, 33),cv2.FONT_HERSHEY_SIMPLEX, 0.5,(255, 255, 255), 2, cv2.LINE_AA)
@@ -106,17 +111,65 @@ while(True):
 
     #FInding the contours
     cnts, _ = cv2.findContours(Mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    print(cnts)
+    #print(cnts)
     center=0
 
-    if(len(cnts)>0):
+    if(len(cnts)>0):                #If any contours found
         #Sorting the contours from higest to lowest and choosing the highest one
         cnt = sorted(cnts, key=cv2.contourArea, reverse=True)[0]
         (x, y), radius=cv2.minEnclosingCircle(cnt)                  #Getting the center point and radius
-        print(radius)
+        #print(radius)
         cv2.circle(frame,(int(x),int(y)),int(radius),(0, 255, 255),2)               #Displays a circle around the center
+        cnt_moments = cv2.moments(cnt)
+        center = (int(cnt_moments['m10'] / cnt_moments['m00']), int(cnt_moments['m01'] / cnt_moments['m00']))    #m10 and m00 gives center x, m01 and m00 gives center y
+        if center[1]<=65:                                   #Color portion at the top
+            if center[0] >=40 and center[0] <=140:          #clear button
+                paintWindow[67:,:,:] =255
+                # Reset all colors and queues
+                red_index = 0
+                green_index = 0
+                blue_index = 0
+                yellow_index = 0
+                rpoints = [deque(maxlen=1024)]
+                gpoints = [deque(maxlen=1024)]
+                bpoints = [deque(maxlen=1024)]
+                ypoints = [deque(maxlen=1024)]
+            elif center[0] >= 160 and center[0] <=255: #For blue color
+                colorIndex = 0
+                print("Blue")
+            elif center[0] >= 275 and center[0] <=370: #For green color
+                colorIndex = 1
+                print("Green")
+            elif center[0] >= 390 and center[0] <= 485:  # For Red color
+                colorIndex = 2
+                print("Red")
+            elif center[0] >= 505 and center[0] <= 600:  # For yellow color
+                colorIndex = 3
+                print("Yellow")
 
-    #Shows all the frames
+        else:
+            #To capture pixel points in each color queues
+            if colorIndex == 0:
+                bpoints[blue_index].appendleft(center)
+            elif colorIndex == 1:
+                gpoints[green_index].appendleft(center)
+            elif colorIndex == 2:
+                rpoints[red_index].appendleft(center)
+            elif colorIndex == 3:
+                ypoints[yellow_index].appendleft(center)
+
+    else:
+        #When contour is not detected, attach queue to separate
+        gpoints.append(deque(maxlen=512))
+        green_index += 1
+        bpoints.append(deque(maxlen=512))
+        blue_index += 1
+        rpoints.append(deque(maxlen=512))
+        red_index += 1
+        ypoints.append(deque(maxlen=512))
+        yellow_index += 1
+
+                #Shows all the frames
     cv2.imshow("Tracking", frame)
     cv2.imshow("Paint", paintWindow)
     cv2.imshow("mask", Mask)
