@@ -48,9 +48,11 @@ ypoints = [deque(maxlen = 1024)]
 
 cap = cv2.VideoCapture(0)                                          #Camera initialization
 
+
 while(True):
     ret, frame = cap.read()                                         #Video frame
     frame = cv2.flip(frame, 1)                                      #Flipping the camera as it shows mirror image
+
 
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)                    #Converts the frame to HSV color space
 
@@ -87,8 +89,8 @@ while(True):
 
     #Below codes create buttons for color
     frame = cv2.rectangle(frame, (40, 1), (140, 65),(122, 122, 122), -1)
-    frame = cv2.rectangle(frame, (160, 1), (255, 65),colors[0], -1)
-    frame = cv2.rectangle(frame, (390, 1), (485, 65), colors[2], -1)
+    frame = cv2.rectangle(frame, (160, 1), (255, 65),colors[2], -1)
+    frame = cv2.rectangle(frame, (390, 1), (485, 65), colors[0], -1)
     frame = cv2.rectangle(frame, (275, 1), (370, 65),colors[1], -1)
     frame = cv2.rectangle(frame, (505, 1), (600, 65), colors[3], -1)
 
@@ -97,9 +99,9 @@ while(True):
 
 
     cv2.putText(frame, "CLEAR ALL", (49, 33),cv2.FONT_HERSHEY_SIMPLEX, 0.5,(255, 255, 255), 2, cv2.LINE_AA)
-    cv2.putText(frame, "BLUE", (185, 33),cv2.FONT_HERSHEY_SIMPLEX, 0.5,(255, 255, 255), 2, cv2.LINE_AA)
+    cv2.putText(frame, "RED", (185, 33),cv2.FONT_HERSHEY_SIMPLEX, 0.5,(255, 255, 255), 2, cv2.LINE_AA)
     cv2.putText(frame, "GREEN", (298, 33),cv2.FONT_HERSHEY_SIMPLEX, 0.5,(255, 255, 255), 2, cv2.LINE_AA)
-    cv2.putText(frame, "RED", (420, 33),cv2.FONT_HERSHEY_SIMPLEX, 0.5,(255, 255, 255), 2, cv2.LINE_AA)
+    cv2.putText(frame, "BLUE", (420, 33),cv2.FONT_HERSHEY_SIMPLEX, 0.5,(255, 255, 255), 2, cv2.LINE_AA)
     cv2.putText(frame, "YELLOW", (520, 33), cv2.FONT_HERSHEY_SIMPLEX, 0.5,(150, 150, 150), 2, cv2.LINE_AA)
 
 
@@ -169,6 +171,22 @@ while(True):
         ypoints.append(deque(maxlen=512))
         yellow_index += 1
 
+
+    pixel_points = [rpoints,gpoints,bpoints,ypoints]
+    print(pixel_points)
+    try:
+        for i in range(len(pixel_points)):
+            for j in range(len(pixel_points[i])):
+                for k in range(1, len(pixel_points[i][j])):
+                    if pixel_points[i][j][k - 1] is None or pixel_points[i][j][k] is None:
+                        continue
+                    cv2.line(frame, pixel_points[i][j][k - 1], pixel_points[i][j][k], colors[i], 2)
+                    cv2.line(paintWindow, pixel_points[i][j][k - 1], pixel_points[i][j][k], colors[i], 2)
+    except:
+        print('Exception occurred')
+
+
+
                 #Shows all the frames
     cv2.imshow("Tracking", frame)
     cv2.imshow("Paint", paintWindow)
@@ -176,3 +194,7 @@ while(True):
 
     if cv2.waitKey(1) & 0xFF == ord("e"):                                   #Click e to end the program
         break
+
+
+cap.release()
+cv2.destroyAllWindows()
