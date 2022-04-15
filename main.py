@@ -1,3 +1,10 @@
+import sys
+import subprocess
+
+# implement pip as a subprocess:
+subprocess.check_call([sys.executable, '-m', 'pip', 'install',
+'opencv-python'])
+
 from collections import deque
 
 import numpy as np
